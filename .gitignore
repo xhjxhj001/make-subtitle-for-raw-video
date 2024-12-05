@@ -1,0 +1,9 @@
+.env
+.DS_Store
+.idea
+*.log
+.gradio
+data
+output
+temp
+__pycache__
