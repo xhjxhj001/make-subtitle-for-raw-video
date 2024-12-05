@@ -14,4 +14,3 @@ if [ ! -e "$FILE" ]; then
     exit
 fi
 pip install -r requirements.txt
-pip install git+https://github.com/openai/whisper.git
