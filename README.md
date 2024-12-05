@@ -5,6 +5,10 @@
 # 简介
 通过 ffmpeg、whisper、llm 工具，将视频中的语音提取后，转化为多语言字幕，合成到视频中
 
+## 环境配置
+安装ffmpeg
+`brew install ffmpeg`
+
 ## 一、快速使用
 1. 将根目录下 .env.template 复制一份到 .env
 `cp .env.template .env`
