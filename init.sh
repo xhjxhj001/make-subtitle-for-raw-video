@@ -15,5 +15,3 @@ if [ ! -e "$FILE" ]; then
 fi
 pip install -r requirements.txt
 pip install git+https://github.com/openai/whisper.git
-
-python generate_subtitle_by_video.py
