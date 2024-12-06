@@ -18,6 +18,10 @@
 4. 执行 `python generate_subtitle_by_video.py xxx.mp4`
 
 ## 二、目录介绍
-output 是最终输出的视频文件，一共有2个
-xxxx_output.mp4 是硬编码多语言视频文件
-xxxx_output_ass.mp4 是软编码，可以自己通过播放器选择挂载哪种语音的视频文件
+output 是最终输出的视频文件目录，一共有2个
+- xxxx_output.mp3 是提取的音频文件
+- xxxx_output.mp4 是硬编码多语言视频文件
+- xxxx_output_ass.mp4 是软编码，可以自己通过播放器选择挂载哪种语音的视频文件
+- xxxx.ass 是字幕文件，可以外挂到视频中
+temp 是中间过程的文件目录
+- xxxx.srt 是srt字幕文件

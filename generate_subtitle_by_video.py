@@ -159,24 +159,21 @@ def trans_subtitle(subtitle):
         chunk_data.append(data)
 
     for temp_data in chunk_data:
-        input = (
-            "请帮我将下面的json中的text内容翻译为中文后替换原text，返回替换后的json文本，请不要输出任何其他内容，并检查返回的结果json的合法性，json内容为:"
-            + json.dumps(temp_data)
-        )
-        llm_obj = []
-        for i in range(3):
-            llm_res = llm.LlmClient().chat_single(input)
-            try:
-                llm_obj = json.loads(llm_res)
-                break
-            except json.JSONDecodeError:
-                print(f"错误: {llm_res} 中的 JSON 数据无效。")
-                llm_obj = []
-        if len(llm_obj) <= 0:
-            exit(1)
-
-        for line in llm_obj:
-            final.append(line)
+        content = ""
+        for temp_item in temp_data:
+            content += temp_item["text"] + "\n"
+        input = f"""
+        目标：请将下面原文内容逐行翻译为中文，要求逐行输出翻译后的文本，不要输出任何其他内容。
+        原文：{content}
+        举例：
+        原文：Apple
+        输出：苹果
+        """
+        llm_res = llm.LlmClient().chat_single(input)
+        llm_array = llm_res.split("\n")
+        for index, line in enumerate(llm_array):
+            temp_data[index]["text"] = line
+            final.append(temp_data[index])
     return final
 
 
@@ -189,6 +186,29 @@ def save_srt(ret, srt_path):
             for line in lines:
                 file.write(line + "\n")  # 每行后添加换行符
     print("文本文件已成功写入！")
+
+
+def read_from_file(srt_path):
+    # 使用 with 语句打开文件
+    res = []
+    with open(srt_path, "r") as file:
+        # 逐行读取文件
+        count = 1
+        temp = {}
+        for line in file:
+            content = line.strip()
+            if count == 1:
+                temp["num"] = content
+            if count == 2:
+                temp["duration"] = content
+            if count == 3:
+                temp["text"] = content
+            if count == 4:
+                res.append(temp)
+                count = 0
+                temp = {}
+            count += 1
+    return res
 
 
 def save_combine_srt(chi, ori, srt_path):
@@ -253,18 +273,22 @@ print("step1: 将mp4 转化为 mp3")
 ffmpeg_2_mp3(mp4, mp3)
 print("step2 将mp3 转化为文本")
 # 将mp3 转化为文本
-res = stt.TransVoice().audio_to_text(mp3)
+ori_text = stt.TransVoice().audio_to_text(mp3)
+print(ori_text)
 print("step3 将文本转化为字幕文件")
 # 将文本转化为字幕文件
-subtitle = format_stt_res(res)
-print("step4 将字幕文件完成翻译")
+subtitle = format_stt_res(ori_text)
+# 将原始语言字幕保存
+save_srt(subtitle, eng_srt)
+# subtitle = read_from_file(eng_srt)
+print(subtitle)
 # 将字幕文件完成翻译
+print("step4 将字幕文件完成翻译")
 trans_res = trans_subtitle(subtitle)
 print("step5 将字幕保存")
+print(trans_res)
 # 将中文字幕保存
 save_srt(trans_res, chi_srt)
-# 将英文字幕保存
-save_srt(subtitle, eng_srt)
 # 将中英混合字幕保存
 save_combine_srt(trans_res, subtitle, combine_srt)
 # 将srt字幕转化为ass格式，支持自定义字幕格式

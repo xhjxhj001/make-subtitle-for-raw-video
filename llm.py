@@ -8,8 +8,6 @@ llm_model_name = "Qwen/Qwen2.5-72B-Instruct"
 
 class LlmClient:
     def __init__(self):
-
-        print("step0: 初始化")
         config = tool.load_config()
         self.config = config
 
@@ -17,7 +15,7 @@ class LlmClient:
         self,
         user_input,
         history=None,
-        template="你是一个系统助手，请用中文回答问题",
+        template="你是一个系统助手，请回答用户的问题",
     ):
         print("user_input:", user_input)
         conn = http.client.HTTPSConnection("api.siliconflow.cn")
@@ -39,7 +37,6 @@ class LlmClient:
             "messages": messages,
             "stream": False,
             "max_tokens": 4096,
-            "response_format": {"type": "json_object"},
         }
         payload = json.dumps(body)
         headers = {
