@@ -5,6 +5,7 @@ import datetime
 import llm
 import os
 import sys
+import re
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 mp3_file_path = cur_dir + "/output/{}.mp3"
@@ -160,19 +161,24 @@ def trans_subtitle(subtitle):
 
     for temp_data in chunk_data:
         content = ""
+        count = 1
         for temp_item in temp_data:
-            content += temp_item["text"] + "\n"
+            content += str(count) + ". " + temp_item["text"] + "\n"
+            count += 1
         input = f"""
-        目标：请将下面原文内容逐行翻译为中文，要求逐行输出翻译后的文本，不要输出任何其他内容。
+        目标：请将下面原文内容逐行翻译为中文，要求逐行输出翻译后的文本，且要求序号与原文一样，可以适当的切分长句，不要输出任何其他内容。
         原文：{content}
         举例：
-        原文：Apple
-        输出：苹果
+        原文：1. Apple
+        2. Banana
+        输出：1. 苹果
+        2. 香蕉
         """
         llm_res = llm.LlmClient().chat_single(input)
         llm_array = llm_res.split("\n")
         for index, line in enumerate(llm_array):
-            temp_data[index]["text"] = line
+            result = re.sub(r"\d+\S", "", line)
+            temp_data[index]["text"] = result
             final.append(temp_data[index])
     return final
 
@@ -213,13 +219,20 @@ def read_from_file(srt_path):
 
 def save_combine_srt(chi, ori, srt_path):
     with open(srt_path, mode="w", encoding="utf-8") as file:
-        for index, item in enumerate(chi):
+        trans_obj = {}
+        for item in chi:
+            trans_obj[item["num"]] = item["text"]
+        for index, item in enumerate(ori):
+            if item["num"] in trans_obj:
+                trans_text = trans_obj[item["num"]]
+            else:
+                trans_text = ""
             # 示例数据
             lines = [
                 item["num"],
                 item["duration"],
+                trans_text,
                 item["text"],
-                ori[index]["text"],
                 "",
             ]
             # 逐行写入文本文件
@@ -244,10 +257,11 @@ def seconds_to_hms_milliseconds(seconds):
     return f"{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}"
 
 
-if len(sys.argv) < 2:
-    print("please use python generate_subtitle_by_video.py xxx.mp4")
-    exit(-1)
-file_path = sys.argv[1]
+# if len(sys.argv) < 2:
+#     print("please use python generate_subtitle_by_video.py xxx.mp4")
+#     exit(-1)
+# file_path = sys.argv[1]
+file_path = "/Users/xuhuanju/personal/Agent/make-subtitle-for-raw-video/data/openai_12days_1.mp4"
 # 获取文件名
 filename = os.path.basename(file_path)
 # 去掉扩展名
@@ -274,21 +288,19 @@ ffmpeg_2_mp3(mp4, mp3)
 print("step2 将mp3 转化为文本")
 # 将mp3 转化为文本
 ori_text = stt.TransVoice().audio_to_text(mp3)
-print(ori_text)
 print("step3 将文本转化为字幕文件")
 # 将文本转化为字幕文件
 subtitle = format_stt_res(ori_text)
 # 将原始语言字幕保存
 save_srt(subtitle, eng_srt)
 # subtitle = read_from_file(eng_srt)
-print(subtitle)
 # 将字幕文件完成翻译
 print("step4 将字幕文件完成翻译")
-trans_res = trans_subtitle(subtitle)
+# trans_res = trans_subtitle(subtitle)
 print("step5 将字幕保存")
-print(trans_res)
 # 将中文字幕保存
-save_srt(trans_res, chi_srt)
+# save_srt(trans_res, chi_srt)
+trans_res = read_from_file(chi_srt)
 # 将中英混合字幕保存
 save_combine_srt(trans_res, subtitle, combine_srt)
 # 将srt字幕转化为ass格式，支持自定义字幕格式
