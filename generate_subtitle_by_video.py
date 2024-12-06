@@ -292,14 +292,16 @@ print("step3 将文本转化为字幕文件")
 subtitle = format_stt_res(ori_text)
 # 将原始语言字幕保存
 save_srt(subtitle, eng_srt)
+# __debug__
 # subtitle = read_from_file(eng_srt)
 # 将字幕文件完成翻译
 print("step4 将字幕文件完成翻译")
-# trans_res = trans_subtitle(subtitle)
+trans_res = trans_subtitle(subtitle)
 print("step5 将字幕保存")
 # 将中文字幕保存
-# save_srt(trans_res, chi_srt)
-trans_res = read_from_file(chi_srt)
+save_srt(trans_res, chi_srt)
+# __debug__
+# trans_res = read_from_file(chi_srt)
 # 将中英混合字幕保存
 save_combine_srt(trans_res, subtitle, combine_srt)
 # 将srt字幕转化为ass格式，支持自定义字幕格式
