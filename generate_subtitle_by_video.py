@@ -257,11 +257,10 @@ def seconds_to_hms_milliseconds(seconds):
     return f"{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}"
 
 
-# if len(sys.argv) < 2:
-#     print("please use python generate_subtitle_by_video.py xxx.mp4")
-#     exit(-1)
-# file_path = sys.argv[1]
-file_path = "/Users/xuhuanju/personal/Agent/make-subtitle-for-raw-video/data/openai_12days_1.mp4"
+if len(sys.argv) < 2:
+    print("please use python generate_subtitle_by_video.py xxx.mp4")
+    exit(-1)
+file_path = sys.argv[1]
 # 获取文件名
 filename = os.path.basename(file_path)
 # 去掉扩展名
